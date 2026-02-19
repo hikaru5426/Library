@@ -11,99 +11,92 @@ const readInput = document.querySelector("#read-input");
 const btnConfirm = document.querySelector("#confirm-btn");
 
 
-let myLibrary = [];
 
-function Book(title, author, pages, read) {
-    if (!new.target) {
-        throw Error("Book constructor must be called with 'new'");
+
+class Book {
+    static myLibrary = [];
+
+    constructor(title, author, pages, read) {
+
+        this.title = title;
+        this.author = author;
+        this.pages = pages;
+        this.read = read;
+        this.id = crypto.randomUUID();
+        Book.myLibrary.push(this);
     }
 
-    this.title = title;
-    this.author = author;
-    this.pages = pages;
-    this.read = read;
-    this.id = crypto.randomUUID();
-}
+    static removeBook(idToRemove) {
+        Book.myLibrary = Book.myLibrary.filter(book => book.id !== idToRemove);
+        Book.displayBooks();
+    }
 
-function removeBook(idToRemove) {
-    myLibrary = myLibrary.filter(book => book.id !== idToRemove);
-    displayBooks();
-}
+    static switchReadValue(idToSwitch) {
+        Book.myLibrary = Book.myLibrary.map(book =>
+            book.id === idToSwitch
+                ? { ...book, read: !book.read }
+                : book
+        );
+        Book.displayBooks();
+    }
 
-function switchReadValue(idToSwitch){
-    myLibrary = myLibrary.map(book =>
-        book.id === idToSwitch
-        ? {...book, read : !book.read}
-        : book
-    );
-    displayBooks();
-}
+    static displayBooks() {
+        bookshelf.replaceChildren();
+        for (const book of Book.myLibrary) {
+            const bookDiv = document.createElement("div");
+            bookDiv.classList.add("book");
 
-function addBookToLibrary(title, author, pages, read) {
-    myLibrary.push(new Book(title, author, pages, read));
-}
+            const btnRemoveBook = document.createElement("button");
+            btnRemoveBook.classList.add("btn-removeBook");
+            btnRemoveBook.textContent = "X";
+            bookDiv.appendChild(btnRemoveBook);
 
-function displayBooks() {
-    bookshelf.replaceChildren();
-    for (const book of myLibrary) {
-        const bookDiv = document.createElement("div");
-        bookDiv.classList.add("book");
+            const title = document.createElement("div");
+            title.classList.add("title");
+            title.textContent = "title : " + book.title;
+            bookDiv.appendChild(title);
 
-        const btnRemoveBook = document.createElement("button");
-        btnRemoveBook.classList.add("btn-removeBook");
-        btnRemoveBook.textContent = "X";
-        bookDiv.appendChild(btnRemoveBook);
+            const author = document.createElement("div");
+            author.classList.add("author");
+            author.textContent = "author : " + book.author;
+            bookDiv.appendChild(author);
 
-        const title = document.createElement("div");
-        title.classList.add("title");
-        title.textContent = "title : " + book.title;
-        bookDiv.appendChild(title);
+            const pages = document.createElement("div");
+            pages.classList.add("pages");
+            pages.textContent = "pages : " + book.pages;
+            bookDiv.appendChild(pages);
 
-        const author = document.createElement("div");
-        author.classList.add("author");
-        author.textContent = "author : " + book.author;
-        bookDiv.appendChild(author);
+            const btnRead = document.createElement("button");
+            btnRead.classList.add("btnRead");
+            if (book.read === true) {
+                btnRead.textContent = "Read";
+                btnRead.style.backgroundColor = "green";
+            } else {
+                btnRead.textContent = "Not read";
+                btnRead.style.backgroundColor = "red";
+            }
 
-        const pages = document.createElement("div");
-        pages.classList.add("pages");
-        pages.textContent = "pages : " + book.pages;
-        bookDiv.appendChild(pages);
+            bookDiv.appendChild(btnRead);
 
-        const btnRead = document.createElement("button");
-        btnRead.classList.add("btnRead");
-        if (book.read === true) {
-            btnRead.textContent = "Read";
-            btnRead.style.backgroundColor = "green";
-        } else {
-            btnRead.textContent = "Not read";
-            btnRead.style.backgroundColor = "red";
+            const id = document.createElement("div");
+            id.classList.add("id");
+            id.textContent = "id : " + book.id;
+            bookDiv.appendChild(id);
+
+            bookDiv.dataset.id = book.id;
+
+            bookshelf.appendChild(bookDiv);
         }
-
-        bookDiv.appendChild(btnRead);
-
-        const id = document.createElement("div");
-        id.classList.add("id");
-        id.textContent = "id : " + book.id;
-        bookDiv.appendChild(id);
-
-        bookDiv.dataset.id = book.id;
-
-
-
-
-        bookshelf.appendChild(bookDiv);
-
-
     }
 }
 
 bookshelf.addEventListener("click", (e) => {
     if (e.target.classList.contains("btn-removeBook")) {
         const book = e.target.closest(".book");
-        removeBook(book.dataset.id);
+        Book.removeBook(book.dataset.id);
     } else if (e.target.classList.contains("btnRead")) {
         const book = e.target.closest(".book");
-        switchReadValue(book.dataset.id);
+        Book.switchReadValue(book.dataset.id);
     }
 })
 
@@ -122,18 +115,18 @@ btnConfirm.addEventListener("click", (e) => {
     } else {
         readValue = false;
     }
-    addBookToLibrary(authorInput.value, titleInput.value, nbPagesInput.value, readValue);
-    displayBooks();
+    new Book(authorInput.value, titleInput.value, nbPagesInput.value, readValue);
+    Book.displayBooks();
     e.preventDefault();
     dialogAddBook.close();
     formAddBook.reset();
 })
 
-addBookToLibrary("Cendrillon", "Charles Perrault", 112, false);
-addBookToLibrary("Dune", "Frank Herbert", 826, false);
-addBookToLibrary("Le Tour du monde en quatre-vingts jours", "Jules Verne", 371, true);
-addBookToLibrary("Le Comte de Monte-Cristo", "Alexandre Dumas", 1889, true);
-addBookToLibrary("The Hobbit", "J.R.R. Tolkien", 310, false);
-addBookToLibrary("Madame Bovary", "Gustave Flaubert", 468, false);
+new Book("Cendrillon", "Charles Perrault", 112, false);
+new Book("Dune", "Frank Herbert", 826, false);
+new Book("Le Tour du monde en quatre-vingts jours", "Jules Verne", 371, true);
+new Book("Le Comte de Monte-Cristo", "Alexandre Dumas", 1889, true);
+new Book("The Hobbit", "J.R.R. Tolkien", 310, false);
+new Book("Madame Bovary", "Gustave Flaubert", 468, false);
 
-displayBooks(myLibrary);
+Book.displayBooks();
